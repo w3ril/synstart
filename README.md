@@ -4,6 +4,11 @@ Synchronization of the start is achieved due to the scheduled start time on seve
 
 By default, the start synchronization is expected to be up to 1 millisecond (excluding the desynchronization introduced by ntp), but tuning allows you to synchronize the start up to 10 microseconds.
 
+Example:
+ daemon1: actual stime 2021-02-01 22:34:00.000085
+ daemon2: actual stime 2021-02-01 22:34:00.000209
+ daemon3: actual stime 2021-02-01 22:34:00.000191
+
 ![alt text](https://raw.githubusercontent.com/w3ril/synstart/main/synstart.png)
 
 Usage:

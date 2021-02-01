@@ -6,7 +6,9 @@ By default, the start synchronization is expected to be up to 1 millisecond (exc
 
 Example:
  daemon1: actual stime 2021-02-01 22:34:00.000085
+ 
  daemon2: actual stime 2021-02-01 22:34:00.000209
+ 
  daemon3: actual stime 2021-02-01 22:34:00.000191
 
 ![alt text](https://raw.githubusercontent.com/w3ril/synstart/main/synstart.png)

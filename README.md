@@ -16,21 +16,21 @@ Usage:
 
 1 - configure daemon mandatory variables (synstart_daemon.py):
    
-   a) starting_process_cmd - a command that must be executed synchronously between daemons
-   
-   b) controller_ip - simple list of allowed controllers
+   a) controller_ip - simple list of allowed controllers
    
 2 - configure controller mandatory variables (synstart_controller.py):
 
   a) daemon_ip - list of daemons
   
-  b) command - one of the implemented commands:
+  b) daemon_starting_process - a command that must be executed synchronously between daemons
   
-    1) b"ntpupdate 194.190.168.1" - system time synchronization, you need to provide ntp server (local, pool.ntp.org or other)
+  c) daemon_command - one of the implemented commands:
+  
+    1) { "command": "ntpupdate", "ip": "194.190.168.1"} - system time synchronization, you need to provide ntp server (local, pool.ntp.org or other)
     
-    2) b"start_process_in_time 2021-02-01 19:58:00" - start time synchronization (utility/program)
+    2) { "command": "start_process_in_time", "scheduled_start_time": "2021-02-02 16:11:00", "daemon_starting_process": daemon_starting_process} - start time synchronization (utility/program)
     
-    3) b"queue_status" - query the status of the queue (deamon status)
+    3) { "command": "queue_status" } - query the status of the queue (daemon status)
     
 3 - start daemons
 

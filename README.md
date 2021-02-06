@@ -2,13 +2,23 @@ Simple Python-based synchronization of program/utility launches between Linux sy
 
 Synchronization of the start is achieved due to the scheduled start time on several TCP daemons/servers (similar to at/atd, but much more precise). Before syncing the start of the program/utility, do not forget to synchronize the time between daemons using "ntpupdate <ntp_server>" command, this requires the installed ntpdate utility.
 
-By default, the start synchronization is expected to be up to 1 millisecond (excluding the desynchronization introduced by ntp), but tuning allows you to synchronize the start up to 10 microseconds. Example:
+By default, the start synchronization is expected to be up to <b>1 millisecond</b> (excluding the desynchronization introduced by ntp), but tuning allows you to synchronize the start <b>up to 10 microseconds</b>.
 
- - daemon1: actual stime 2021-02-01 22:34:00.000085
- 
- - daemon2: actual stime 2021-02-01 22:34:00.000209
- 
- - daemon3: actual stime 2021-02-01 22:34:00.000191
+Example:
+
+<b>at/atd based (scheduled start at 20:32)</b>
+
+- daemon1 actual start at: 20:32:00.160
+
+- daemon2 actual start at: 20:32:00.894
+
+<b>synstart based (scheduled start at 20:34)</b>
+
+- daemon1 actual start at: 22:34:00.000085
+
+- daemon2 actual start at: 22:34:00.000209
+
+- daemon3 actual start at: 22:34:00.000191
 
 ![alt text](https://raw.githubusercontent.com/w3ril/synstart/main/synstart.png)
 

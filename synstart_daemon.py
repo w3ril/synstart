@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# ver 1.2 by Petr V. Redkin
+# ver 1.3 by Petr V. Redkin
 
 import datetime
 import time
@@ -12,7 +12,7 @@ import json
 log_fname = "synstart.log"
 daemon_ip = '0.0.0.0'
 daemon_port = 5555
-controller_ip = ['192.168.1.28', '192.168.1.29', '192.168.1.179']
+controller_ip = ['192.168.1.179']
 sleep_time = 1/1000 # 1 msec (1/1000 of second) default; change for more precision but higher CPU load
 
 
@@ -66,35 +66,37 @@ def ntpupdate(ntp_server):
 
 
 write_to_file_with_new_line_and_dt("syn_start daemon started, expected time format for start_process_in_time function is \"{}\"".format(str(datetime.datetime.now())), log_fname)
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind ((daemon_ip,daemon_port))
 while True:
-	data, addr = sock.recvfrom(4096)
+	sock.listen(1)
+	conn, addr = sock.accept()
+	data = conn.recv(4096)
 	# 1 - basic auth & request check
 	if addr[0] in controller_ip:
-		write_to_file_with_new_line_and_dt("udp data received from trusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
+		write_to_file_with_new_line_and_dt("data received from trusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
 		if b"command" not in data:
 			write_to_file_with_new_line_and_dt("no commands in data; skip request".format(addr, data), log_fname)
-			sock.sendto(b"FAIL", addr)
+			conn.send(b"FAIL")
 			continue
 		j = json.loads(data)
 	else:
-		write_to_file_with_new_line_and_dt("udp data received from untrusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
-		sock.sendto(b"FAIL", addr)
+		write_to_file_with_new_line_and_dt("data received from untrusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
+		conn.send(b"FAIL")
 		continue
 	# 2 - get queue status
 	if j["command"] == "queue_status":
 		write_to_file_with_new_line_and_dt("queue_status ok", log_fname)
-		sock.sendto(b"OK", addr)
+		conn.send(b"OK")
 	# 3 - ntpdate based on ntp (ip/fqdn) address from controller
 	elif j["command"] == "ntpupdate":
 		data = data.decode()
 		ntp_server = j["ip"]
 		res = ntpupdate(ntp_server)
 		if res:
-			sock.sendto(b"OK", addr)
+			conn.send(b"OK")
 		else:
-			sock.sendto(b"FAIL", addr)
+			conn.send(b"FAIL")
 	# 4 - process starting
 	elif j["command"] == "start_process_in_time":
 		data = data.decode()
@@ -102,10 +104,10 @@ while True:
 		stime = j["scheduled_start_time"]
 		daemon_starting_process = j["daemon_starting_process"]
 		if check_start_time(stime):
-			sock.sendto(b"OK", addr)
+			conn.send(b"OK")
 			start_process_in_time(stime, daemon_starting_process)
 		else:
-			sock.sendto(b"FAIL", addr)
+			conn.send(b"FAIL")
 	else:
 		write_to_file_with_new_line_and_dt("unknown command; data {}".format(data), log_fname)
-		sock.sendto(b"FAIL", addr)
+		conn.send(b"FAIL")

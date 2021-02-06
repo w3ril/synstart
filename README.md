@@ -12,7 +12,7 @@ Example:
 
 - daemon2 actual start at: 20:32:00.894
 
-<b>synstart based (scheduled start at 20:34)</b>
+<b>synstart based (scheduled start at 22:34)</b>
 
 - daemon1 actual start at: 22:34:00.000085
 

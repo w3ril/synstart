@@ -22,13 +22,13 @@ Example:
 
 ![alt text](https://raw.githubusercontent.com/w3ril/synstart/main/synstart.png)
 
-Usage:
+<b> Usage: </b>
 
-1 - configure daemon mandatory variables (synstart_daemon.py):
+<b> 1 - configure daemon mandatory variables (synstart_daemon.py): </b>
    
    a) controller_ip - simple list of allowed controllers
    
-2 - configure controller mandatory variables (synstart_controller.py):
+<b> 2 - configure controller mandatory variables (synstart_controller.py): </b>
 
   a) daemon_ip - list of daemons
   
@@ -42,11 +42,11 @@ Usage:
     
     3) { "command": "queue_status" } - query the status of the queue (daemon status)
     
-3 - start daemons
+<b> 3 - start daemons </b>
 
    ./synstart_daemon.py
   
-4 - start controller
+<b> 4 - start controller </b>
 
    ./synstart_controller.py
   

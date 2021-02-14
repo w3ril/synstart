@@ -15,19 +15,11 @@ daemon_port = 5555
 controller_ip = ['192.168.1.179']
 sleep_time = 1/1000 # 1 msec (1/1000 of second) default; change for more precision but higher CPU load
 
-
-def write_to_file_with_new_line_and_dt(text, fname):
-    dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") # for log
-    with open(fname, 'a') as the_file:
-        t = "{} {}".format(dt,text)
-        print(t)
-        the_file.write(t + '\n')
-
 def convert_str_time_to_int(str_time):
 	return int(str_time.replace(" ", "").replace(":", "").replace("-", "").replace("-", "").replace(".", ""))
 
 def start_process_in_time(stime, daemon_starting_process):
-	write_to_file_with_new_line_and_dt("starting start_process_in_time: stime {}".format(stime), log_fname)
+	print("starting start_process_in_time: stime {}".format(stime))
 	ln = len(stime)
 	stime_to_compare = convert_str_time_to_int(stime)
 	while True:
@@ -35,37 +27,36 @@ def start_process_in_time(stime, daemon_starting_process):
 		actual_time_to_compare = convert_str_time_to_int(actual_time[0:ln])
 		if actual_time_to_compare >= stime_to_compare:
 			res = subprocess.run(daemon_starting_process, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-			write_to_file_with_new_line_and_dt("finished start_process_in_time: stime {}, stime_to_compare {}, stime length {}, actual stime {}, actual actual_time_to_compare {} result {}".format(stime, stime_to_compare, ln, actual_time, actual_time_to_compare, res), log_fname)
+			print("finished start_process_in_time: stime {}, stime_to_compare {}, stime length {}, actual stime {}, actual actual_time_to_compare {} result {}".format(stime, stime_to_compare, ln, actual_time, actual_time_to_compare, res))
 			return
 		time.sleep(sleep_time)
 
 def check_start_time(stime):
-	write_to_file_with_new_line_and_dt("starting check_start_time: stime {}".format(stime), log_fname)
+	print("starting check_start_time: stime {}".format(stime))
 	ln = len(stime)
 	stime_to_compare = convert_str_time_to_int(stime)
 	actual_time = str(datetime.datetime.now())
 	actual_time_to_compare = convert_str_time_to_int(actual_time[0:ln])
 	if actual_time_to_compare >= stime_to_compare:
 		res = False
-		write_to_file_with_new_line_and_dt("error check_start_time: scheduled starting time in the past!", log_fname)
+		print("error check_start_time: scheduled starting time in the past!")
 	else:
 		res = True
-	write_to_file_with_new_line_and_dt("finished check_start_time: stime {}, stime_to_compare {}, stime length {}, actual stime {}, actual actual_time_to_compare {} result {}".format(stime, stime_to_compare, ln, actual_time, actual_time_to_compare, res), log_fname)
+	print("finished check_start_time: stime {}, stime_to_compare {}, stime length {}, actual stime {}, actual actual_time_to_compare {} result {}".format(stime, stime_to_compare, ln, actual_time, actual_time_to_compare, res))
 	return res
 
 def ntpupdate(ntp_server):
-	write_to_file_with_new_line_and_dt("starting ntpupdate: ntp_server {}".format(ntp_server), log_fname)
-	cmd = "ntpdate {}".format(ntp_server).split(" ")
+	print("starting ntpupdate: ntp_server {}".format(ntp_server))
+	cmd = "sntp -S {}".format(ntp_server).split(" ")
 	res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-	write_to_file_with_new_line_and_dt("finished ntpupdate: ntp_server {}; result {}".format(ntp_server, res), log_fname)
+	print("finished ntpupdate: ntp_server {}; result {}".format(ntp_server, res))
 	if res.returncode == 0:
 		return True
 	else:
 		return False
 
 
-
-write_to_file_with_new_line_and_dt("syn_start daemon started, expected time format for start_process_in_time function is \"{}\"".format(str(datetime.datetime.now())), log_fname)
+print("syn_start daemon started, expected time format for start_process_in_time function is \"{}\"".format(str(datetime.datetime.now())))
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.bind ((daemon_ip,daemon_port))
 while True:
@@ -74,21 +65,21 @@ while True:
 	data = conn.recv(4096)
 	# 1 - basic auth & request check
 	if addr[0] in controller_ip:
-		write_to_file_with_new_line_and_dt("data received from trusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
+		print("data received from trusted controller ip/port: {}; data: {}".format(addr, data))
 		if b"command" not in data:
-			write_to_file_with_new_line_and_dt("no commands in data; skip request".format(addr, data), log_fname)
+			print("no commands in data; skip request".format(addr, data))
 			conn.send(b"FAIL")
 			continue
 		j = json.loads(data)
 	else:
-		write_to_file_with_new_line_and_dt("data received from untrusted controller ip/port: {}; data: {}".format(addr, data), log_fname)
+		print("data received from untrusted controller ip/port: {}; data: {}".format(addr, data))
 		conn.send(b"FAIL")
 		continue
 	# 2 - get queue status
 	if j["command"] == "queue_status":
-		write_to_file_with_new_line_and_dt("queue_status ok", log_fname)
+		print("queue_status ok")
 		conn.send(b"OK")
-	# 3 - ntpdate based on ntp (ip/fqdn) address from controller
+	# 3 - sntp based on ntp (ip/fqdn) address from controller
 	elif j["command"] == "ntpupdate":
 		data = data.decode()
 		ntp_server = j["ip"]
@@ -109,5 +100,5 @@ while True:
 		else:
 			conn.send(b"FAIL")
 	else:
-		write_to_file_with_new_line_and_dt("unknown command; data {}".format(data), log_fname)
+		print("unknown command; data {}".format(data))
 		conn.send(b"FAIL")

@@ -20,12 +20,6 @@ daemon_command = { "command": "start_process_in_time", "scheduled_start_time": "
 #daemon_command = { "command": "ntpupdate", "ip": "194.190.168.1"}
 #daemon_command = { "command": "queue_status" }
 
-def write_to_file_with_new_line_and_dt(text, fname):
-    dt = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") # for log
-    with open(fname, 'a') as the_file:
-        t = "{} {}".format(dt,text)
-        print(t)
-        the_file.write(t + '\n')
 
 def send_request(ip):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -34,21 +28,21 @@ def send_request(ip):
 	#sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 5)
 	sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 1)
 	sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
-	write_to_file_with_new_line_and_dt("connecting to daemon_ip {}".format(ip), log_fname)
+	print("connecting to daemon_ip {}".format(ip))
 	connect=sock.connect((ip,daemon_port))
-	write_to_file_with_new_line_and_dt("sending daemon_command {} to daemon".format(daemon_command), log_fname)
+	print("sending daemon_command {} to daemon".format(daemon_command))
 	j = json.dumps(daemon_command)
 	sock.send(j.encode())
-	write_to_file_with_new_line_and_dt("waiting ACK from daemon", log_fname)
+	print("waiting ACK from daemon")
 	data = sock.recv(4096)
 	if data == b"OK":
-		write_to_file_with_new_line_and_dt("successful communication with daemon", log_fname)
+		print("successful communication with daemon")
 	else:
-		write_to_file_with_new_line_and_dt("unsuccessful communication with daemon", log_fname)
+		print("unsuccessful communication with daemon")
 		raise Exception("unsuccessful communication with daemon")
-	write_to_file_with_new_line_and_dt("closing socket with daemon", log_fname)
+	print("closing socket with daemon")
 	sock.close()
 
 
-write_to_file_with_new_line_and_dt("syn_start controller started", log_fname)
+print("syn_start controller started")
 pool.map(send_request, daemon_ip)
